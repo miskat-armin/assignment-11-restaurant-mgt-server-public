@@ -12,10 +12,6 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.use('/api/brands', brands);
-app.use('/api/products', products)
-app.use('/api/carts', carts)
-
 // Global error handling
 app.use((err, _req, res, next) => {
   res.status(500).send("Uh oh! An unexpected error occured.")

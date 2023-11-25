@@ -7,5 +7,5 @@ try {
 } catch(e) {
   console.error(e);
 }
-let db = conn.db("BrandShop");
+let db = conn.db("RestaurantManagement");
 export default db;
