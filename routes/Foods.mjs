@@ -1,12 +1,61 @@
 import express from "express";
 import db from "../db/conn.mjs";
+import { ObjectId } from "mongodb";
+
 
 const Foods = express.Router();
 
+Foods.get("/get-all-foods", async (req, res) => {
+  try {
+    const collection = db.collection("foods");
+  
+    const foods = await collection.find({}).toArray();
+    res.status(200).json(foods);
 
-Foods.get("/", async(req, res) => {
-    res.send("Working")
-} )
+  } catch (error) {
+    console.error("Error getting all foods:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+
+Foods.get("/get-all-foods/:page", async (req, res) => {
+  try {
+    const itemsPerPage = 9;
+    const collection = db.collection("foods");
+    const page = parseInt(req.params.page, 10);
+    const skip = (page - 1) * itemsPerPage;
+  
+    const foods = await collection.find({}).skip(skip).limit(itemsPerPage).toArray();
+    res.status(200).json(foods);
+
+  } catch (error) {
+    console.error("Error getting all foods:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+Foods.get('/get-food-details/:id', async (req, res) => {
+  try {
+    const foodId = req.params.id
+
+    console.log(foodId)
+    const collection = db.collection("foods");
+
+    const foodDetails = await collection.findOne({ _id: new ObjectId(foodId)});
+
+
+    if (!foodDetails) {
+      return res.status(404).json({ error: 'Food item not found' });
+    }
+
+    res.status(200).json(foodDetails);
+  } catch (error) {
+    console.error('Error getting food details:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 
 Foods.post("/add-item", async (req, res) => {
   console.log(req.body);
