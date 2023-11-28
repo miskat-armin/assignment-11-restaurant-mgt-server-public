@@ -56,7 +56,6 @@ Foods.get('/get-food-details/:id', async (req, res) => {
 
 
 Foods.post("/add-item", async (req, res) => {
-  console.log(req.body);
   try {
     const {
       foodName,
@@ -105,6 +104,40 @@ Foods.get('/added-by-user/:userEmail', async (req, res) => {
   } catch (error) {
     console.error('Error fetching user-added items:', error);
     res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+Foods.put('/updateFood/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+    const updatedData = req.body;
+
+    const collection = db.collection("foods");
+
+    // Update the document based on its _id
+    const result = await collection.updateOne(
+      { _id: new ObjectId(id) },
+      {
+        $set: {
+          foodName: updatedData.foodName,
+          foodImage: updatedData.foodImage,
+          foodCategory: updatedData.foodCategory,
+          quantity: updatedData.quantity,
+          price: updatedData.price,
+          foodOrigin: updatedData.foodOrigin,
+          description: updatedData.description,
+        },
+      }
+    );
+
+    if (result.modifiedCount > 0) {
+      res.status(200).json({ message: 'Document updated successfully' });
+    } else {
+      res.status(404).json({ message: 'Document not found' });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal Server Error' });
   }
 });
 

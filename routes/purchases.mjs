@@ -121,12 +121,28 @@ Purchases.get("/ordered-items-by-user/:userEmail", async (req, res) => {
       ])
       .toArray();
 
-    console.log(orderedItems);
-
     res.status(200).json(orderedItems);
   } catch (error) {
     console.error("Error fetching ordered items by user:", error);
     res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+
+Purchases.delete('/delete-item/:itemId', async (req, res) => {
+  const itemId = req.params.itemId;
+
+  try {
+    const result = await db.collection('purchases').deleteOne({ _id: new ObjectId(itemId) });
+
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ message: 'Item not found' });
+    }
+    
+    res.status(200).json({ message: 'Item deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting item:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
   }
 });
 

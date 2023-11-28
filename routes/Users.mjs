@@ -7,8 +7,6 @@ Users.post("/create-user", async (req, res) => {
   try {
     const { email, username } = req.body;
 
-    console.log(email, username)
-
     const collection = db.collection("users");
 
     const existingUser = await collection.findOne({ email });
