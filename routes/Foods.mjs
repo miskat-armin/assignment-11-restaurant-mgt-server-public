@@ -38,8 +38,6 @@ Foods.get("/get-all-foods/:page", async (req, res) => {
 Foods.get('/get-food-details/:id', async (req, res) => {
   try {
     const foodId = req.params.id
-
-    console.log(foodId)
     const collection = db.collection("foods");
 
     const foodDetails = await collection.findOne({ _id: new ObjectId(foodId)});
@@ -81,8 +79,6 @@ Foods.post("/add-item", async (req, res) => {
       foodOrigin,
       description,
     };
-
-    console.log(newFood);
 
     const collection = db.collection("foods");
 
