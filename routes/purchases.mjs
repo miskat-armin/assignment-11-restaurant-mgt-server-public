@@ -22,7 +22,9 @@ Purchases.post("/", async (req, res) => {
     await collection.insertOne(purchaseData);
 
     const foodCollection = db.collection("foods");
-    const purchasedFood = await foodCollection.findOne({ _id: new ObjectId(foodItemId)});
+    const purchasedFood = await foodCollection.findOne({
+      _id: new ObjectId(foodItemId),
+    });
 
     if (purchasedFood) {
       const updatedQuantity = purchasedFood.quantity - quantity;
@@ -40,16 +42,16 @@ Purchases.post("/", async (req, res) => {
   }
 });
 
-Purchases.get('/top-most-items', async (req, res) => {
+Purchases.get("/top-most-items", async (req, res) => {
   try {
     // Aggregate to find the top 6 most ordered items
     const topOrderedItems = await db
-      .collection('purchases')
+      .collection("purchases")
       .aggregate([
         {
           $group: {
-            _id: '$foodItemId',
-            totalQuantity: { $sum: '$quantity' },
+            _id: "$foodItemId",
+            totalQuantity: { $sum: "$quantity" },
           },
         },
         { $sort: { totalQuantity: -1 } },
@@ -62,14 +64,69 @@ Purchases.get('/top-most-items', async (req, res) => {
 
     // Fetch details of the top ordered items from the foods collection
     const topOrderedItemsDetails = await db
-      .collection('foods')
+      .collection("foods")
       .find({ _id: { $in: foodItemIds } })
       .toArray();
 
     res.status(200).json(topOrderedItemsDetails);
   } catch (error) {
-    console.error('Error fetching top ordered items:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    console.error("Error fetching top ordered items:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+Purchases.get("/ordered-items-by-user/:userEmail", async (req, res) => {
+  try {
+    const { userEmail } = req.params;
+
+    // Fetch all items ordered by the user
+    const orderedItems = await db
+      .collection("purchases")
+      .aggregate([
+        { $match: { userEmail } },
+        {
+          $lookup: {
+            from: "foods",
+            let: { foodItemId: { $toObjectId: "$foodItemId" } },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $eq: ["$_id", "$$foodItemId"],
+                  },
+                },
+              },
+            ],
+            as: "foodDetails",
+          },
+        },
+        { $unwind: "$foodDetails" },
+        {
+          $project: {
+            foodName: "$foodDetails.foodName",
+            foodImage: "$foodDetails.foodImage",
+            foodCategory: "$foodDetails.foodCategory",
+            price: "$foodDetails.price",
+            quantity: "$quantity",
+            purchaseDate: "$purchaseDate",
+            foodOwner: {
+              $cond: {
+                if: { $eq: ["$foodDetails.addBy.name", ""] },
+                then: "$foodDetails.addBy.email",
+                else: "$foodDetails.addBy.name",
+              },
+            },
+          },
+        },
+      ])
+      .toArray();
+
+    console.log(orderedItems);
+
+    res.status(200).json(orderedItems);
+  } catch (error) {
+    console.error("Error fetching ordered items by user:", error);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 });
 

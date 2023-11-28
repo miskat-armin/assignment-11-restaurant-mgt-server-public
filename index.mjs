@@ -22,7 +22,7 @@ app.use((err, _req, res, next) => {
 })
 
 app.use("/",(req, res)=> {
-  res.send("Server is running")
+  res.json("Server is running")
 })
 
 // start the Express server

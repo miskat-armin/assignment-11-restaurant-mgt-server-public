@@ -90,4 +90,22 @@ Foods.post("/add-item", async (req, res) => {
   }
 });
 
+
+Foods.get('/added-by-user/:userEmail', async (req, res) => {
+  try {
+    const { userEmail } = req.params;
+
+    // Fetch all items added by the user
+    const userAddedItems = await db
+      .collection('foods')
+      .find({ 'addBy.email': userEmail })
+      .toArray();
+
+    res.status(200).json(userAddedItems);
+  } catch (error) {
+    console.error('Error fetching user-added items:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 export default Foods;
