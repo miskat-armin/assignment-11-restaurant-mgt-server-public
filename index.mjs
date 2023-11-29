@@ -5,16 +5,31 @@ import "./loadEnvironment.mjs";
 import Foods from "./routes/Foods.mjs";
 import Users from "./routes/Users.mjs";
 import Purchases from "./routes/purchases.mjs";
+import jwt from 'jsonwebtoken'
+import  cookieParser from 'cookie-parser';
 
 const PORT = process.env.PORT || 5050;
 const app = express();
 
-app.use(cors());
+app.use(cors(
+  {
+    origin: ["http://localhost:5173"],
+    credentials: true
+  }
+));
 app.use(express.json());
+app.use(cookieParser())
 
 app.post("/api/jwt", async (req, res) => {
   const body = req.body;
-  res.send(body);
+
+  const token = jwt.sign(body, process.env.SECRET , { expiresIn: "10h" } )
+
+  res.cookie("token", token, {
+    httpOnly: true,
+    secure: false
+  })
+  .send({msg: "success", token})
 })
 
 app.use("/api/foods", Foods);
