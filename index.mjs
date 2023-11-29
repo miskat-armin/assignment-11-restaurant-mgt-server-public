@@ -12,6 +12,11 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+app.post("/api/jwt", async (req, res) => {
+  const body = req.body;
+  res.send(body);
+})
+
 app.use("/api/foods", Foods);
 app.use("/api/users", Users);
 app.use("/api/purchases", Purchases);
